@@ -16,8 +16,9 @@ class _FluxMapWidgetState extends State<_FluxMapWidget> {
       {@required this.devicesFlux,
         this.center,
         this.zoom = 2.0,
+        this.networkStatusLoop = true,
         this.onTap,
-        this.networkStatusLoop = true})
+        this.extraLayers = const <LayerOptions>[]})
       : assert(devicesFlux != null) {
     center ??= LatLng(0.0, 0.0);
   }
@@ -25,8 +26,10 @@ class _FluxMapWidgetState extends State<_FluxMapWidget> {
   final Stream<Device> devicesFlux;
   LatLng center;
   final double zoom;
-  final TapCallback onTap;
   final bool networkStatusLoop;
+  final TapCallback onTap;
+  final List<LayerOptions> extraLayers;
+
 
   StreamSubscription<Device> _sub;
   StreamSubscription<MapPosition> _ms;
@@ -62,7 +65,8 @@ class _FluxMapWidgetState extends State<_FluxMapWidget> {
       });
       //print("MAP STATE READY");
       _listenToFlux();
-      if (t != null) {
+      //print("Status loop: $networkStatusLoop");
+      if (networkStatusLoop) {
         _startDeviceLoop();
       }
       /*fluxMapState.map.changeFeed.listen((change) {
@@ -97,6 +101,7 @@ class _FluxMapWidgetState extends State<_FluxMapWidget> {
         PolygonLayerOptions(polygons: state.map.polygons),
         PolylineLayerOptions(polylines: state.map.lines),
         MarkerLayerOptions(markers: state.map.markers),
+        ...extraLayers
       ],
     );
   }
@@ -117,22 +122,25 @@ class _FluxMapWidget extends StatefulWidget {
       {@required this.devicesFlux,
         this.networkStatusLoop,
         this.center,
+        this.zoom,
         this.onTap,
-        this.zoom});
+        this.extraLayers});
 
   final Stream<Device> devicesFlux;
   final LatLng center;
-  final TapCallback onTap;
   final double zoom;
   final bool networkStatusLoop;
+  final TapCallback onTap;
+  final List<LayerOptions> extraLayers;
 
   @override
   _FluxMapWidgetState createState() => _FluxMapWidgetState(
       devicesFlux: devicesFlux,
       networkStatusLoop: networkStatusLoop,
       center: center,
+      zoom: zoom,
       onTap: onTap,
-      zoom: zoom);
+      extraLayers: extraLayers);
 }
 
 /// The main fluxmap class
@@ -143,8 +151,9 @@ class FluxMap extends StatefulWidget {
         @required this.state,
         this.networkStatusLoop = true,
         this.center,
+        this.zoom = 2.0,
         this.onTap,
-        this.zoom = 2.0});
+        this.extraLayers = const <LayerOptions>[]});
 
   /// The stream of device positions updates
   final Stream<Device> devicesFlux;
@@ -158,11 +167,13 @@ class FluxMap extends StatefulWidget {
   /// The initial zoom
   final double zoom;
 
-  /// The initial onTap func
-  final TapCallback onTap;
-
   /// Enable the status loop
   final bool networkStatusLoop;
+
+  /// The initial onTap func
+  final TapCallback onTap;
+  /// Extra map layers
+  final List<LayerOptions> extraLayers;
 
   @override
   _FluxMapState createState() => _FluxMapState(
@@ -170,8 +181,9 @@ class FluxMap extends StatefulWidget {
       networkStatusLoop: networkStatusLoop,
       state: state,
       center: center,
+      zoom: zoom,
       onTap: onTap,
-      zoom: zoom);
+      extraLayers: extraLayers);
 }
 
 class _FluxMapState extends State<FluxMap> {
@@ -180,8 +192,9 @@ class _FluxMapState extends State<FluxMap> {
         @required this.state,
         this.networkStatusLoop,
         this.center,
+        this.zoom,
         this.onTap,
-        this.zoom})
+        this.extraLayers = const <LayerOptions>[]})
       : assert(state != null),
         assert(devicesFlux != null) {
     fluxMapState = state;
@@ -190,9 +203,10 @@ class _FluxMapState extends State<FluxMap> {
   final Stream<Device> devicesFlux;
   final FluxMapState state;
   final LatLng center;
-  final TapCallback onTap;
   final double zoom;
+  final TapCallback onTap;
   final bool networkStatusLoop;
+  final List<LayerOptions> extraLayers;
 
   @override
   Widget build(BuildContext context) {
@@ -203,8 +217,9 @@ class _FluxMapState extends State<FluxMap> {
           devicesFlux: devicesFlux,
           networkStatusLoop: networkStatusLoop,
           center: center,
-          onTap: onTap,
           zoom: zoom,
+          onTap: onTap,
+          extraLayers: extraLayers,
         ));
   }
 }
