@@ -14,10 +14,10 @@ import 'store.dart';
 class _FluxMapWidgetState extends State<_FluxMapWidget> {
   _FluxMapWidgetState(
       {@required this.devicesFlux,
-      this.center,
-      this.zoom = 2.0,
-      this.networkStatusLoop = true,
-      this.extraLayers = const <LayerOptions>[]})
+        this.center,
+        this.zoom = 2.0,
+        this.onTap,
+        this.networkStatusLoop = true})
       : assert(devicesFlux != null) {
     center ??= LatLng(0.0, 0.0);
   }
@@ -25,8 +25,8 @@ class _FluxMapWidgetState extends State<_FluxMapWidget> {
   final Stream<Device> devicesFlux;
   LatLng center;
   final double zoom;
+  final TapCallback onTap;
   final bool networkStatusLoop;
-  final List<LayerOptions> extraLayers;
 
   StreamSubscription<Device> _sub;
   StreamSubscription<MapPosition> _ms;
@@ -35,15 +35,15 @@ class _FluxMapWidgetState extends State<_FluxMapWidget> {
   final _saveMapStateSignal = PublishSubject<MapPosition>();
 
   Future<void> _listenToFlux() async => _sub = devicesFlux.listen((device) {
-        updateFluxMapState(
-            type: FluxMapUpdateType.devicePosition, value: device);
-      });
+    updateFluxMapState(
+        type: FluxMapUpdateType.devicePosition, value: device);
+  });
 
   Future<void> _startDeviceLoop() async {
     if (!_updateLoopStarted) {
       t = Timer.periodic(
           const Duration(seconds: 3),
-          (t) => updateFluxMapState(
+              (t) => updateFluxMapState(
               type: FluxMapUpdateType.devicesStatus, value: null));
       _updateLoopStarted = true;
     }
@@ -62,8 +62,7 @@ class _FluxMapWidgetState extends State<_FluxMapWidget> {
       });
       //print("MAP STATE READY");
       _listenToFlux();
-      //print("Status loop: $networkStatusLoop");
-      if (networkStatusLoop) {
+      if (t != null) {
         _startDeviceLoop();
       }
       /*fluxMapState.map.changeFeed.listen((change) {
@@ -86,6 +85,7 @@ class _FluxMapWidgetState extends State<_FluxMapWidget> {
       options: MapOptions(
           center: state?.center ?? center,
           zoom: state?.zoom ?? zoom,
+          onTap: onTap,
           onPositionChanged: (position, hasGesture) {
             //print("POS CHANGE $position / $hasGesture");
             //print("BOUNDS: ${state.map.center}/${state.map.zoom}");
@@ -97,7 +97,6 @@ class _FluxMapWidgetState extends State<_FluxMapWidget> {
         PolygonLayerOptions(polygons: state.map.polygons),
         PolylineLayerOptions(polylines: state.map.lines),
         MarkerLayerOptions(markers: state.map.markers),
-        ...extraLayers
       ],
     );
   }
@@ -116,24 +115,24 @@ class _FluxMapWidgetState extends State<_FluxMapWidget> {
 class _FluxMapWidget extends StatefulWidget {
   const _FluxMapWidget(
       {@required this.devicesFlux,
-      this.networkStatusLoop,
-      this.center,
-      this.zoom,
-      this.extraLayers});
+        this.networkStatusLoop,
+        this.center,
+        this.onTap,
+        this.zoom});
 
   final Stream<Device> devicesFlux;
   final LatLng center;
+  final TapCallback onTap;
   final double zoom;
   final bool networkStatusLoop;
-  final List<LayerOptions> extraLayers;
 
   @override
   _FluxMapWidgetState createState() => _FluxMapWidgetState(
       devicesFlux: devicesFlux,
       networkStatusLoop: networkStatusLoop,
       center: center,
-      zoom: zoom,
-      extraLayers: extraLayers);
+      onTap: onTap,
+      zoom: zoom);
 }
 
 /// The main fluxmap class
@@ -141,11 +140,11 @@ class FluxMap extends StatefulWidget {
   /// Default contructor
   const FluxMap(
       {@required this.devicesFlux,
-      @required this.state,
-      this.networkStatusLoop = true,
-      this.center,
-      this.zoom = 2.0,
-      this.extraLayers = const <LayerOptions>[]});
+        @required this.state,
+        this.networkStatusLoop = true,
+        this.center,
+        this.onTap,
+        this.zoom = 2.0});
 
   /// The stream of device positions updates
   final Stream<Device> devicesFlux;
@@ -159,11 +158,11 @@ class FluxMap extends StatefulWidget {
   /// The initial zoom
   final double zoom;
 
+  /// The initial onTap func
+  final TapCallback onTap;
+
   /// Enable the status loop
   final bool networkStatusLoop;
-
-  /// Extra map layers
-  final List<LayerOptions> extraLayers;
 
   @override
   _FluxMapState createState() => _FluxMapState(
@@ -171,18 +170,18 @@ class FluxMap extends StatefulWidget {
       networkStatusLoop: networkStatusLoop,
       state: state,
       center: center,
-      zoom: zoom,
-      extraLayers: extraLayers);
+      onTap: onTap,
+      zoom: zoom);
 }
 
 class _FluxMapState extends State<FluxMap> {
   _FluxMapState(
       {@required this.devicesFlux,
-      @required this.state,
-      this.networkStatusLoop,
-      this.center,
-      this.zoom,
-      this.extraLayers = const <LayerOptions>[]})
+        @required this.state,
+        this.networkStatusLoop,
+        this.center,
+        this.onTap,
+        this.zoom})
       : assert(state != null),
         assert(devicesFlux != null) {
     fluxMapState = state;
@@ -191,9 +190,9 @@ class _FluxMapState extends State<FluxMap> {
   final Stream<Device> devicesFlux;
   final FluxMapState state;
   final LatLng center;
+  final TapCallback onTap;
   final double zoom;
   final bool networkStatusLoop;
-  final List<LayerOptions> extraLayers;
 
   @override
   Widget build(BuildContext context) {
@@ -204,8 +203,8 @@ class _FluxMapState extends State<FluxMap> {
           devicesFlux: devicesFlux,
           networkStatusLoop: networkStatusLoop,
           center: center,
+          onTap: onTap,
           zoom: zoom,
-          extraLayers: extraLayers,
         ));
   }
 }
