@@ -13,11 +13,13 @@ import 'store.dart';
 
 class _FluxMapWidgetState extends State<_FluxMapWidget> {
   _FluxMapWidgetState(
-      {@required this.devicesFlux,
+      {
+        @required this.devicesFlux,
         this.center,
         this.zoom = 2.0,
         this.networkStatusLoop = true,
         this.onTap,
+        this.onPositionChanged,
         this.extraLayers = const <LayerOptions>[]})
       : assert(devicesFlux != null) {
     center ??= LatLng(0.0, 0.0);
@@ -28,11 +30,12 @@ class _FluxMapWidgetState extends State<_FluxMapWidget> {
   final double zoom;
   final bool networkStatusLoop;
   final TapCallback onTap;
+  final PositionCallback onPositionChanged;
   final List<LayerOptions> extraLayers;
-
 
   StreamSubscription<Device> _sub;
   StreamSubscription<MapPosition> _ms;
+
   bool _updateLoopStarted = false;
   Timer t;
   final _saveMapStateSignal = PublishSubject<MapPosition>();
@@ -87,15 +90,18 @@ class _FluxMapWidgetState extends State<_FluxMapWidget> {
     return FlutterMap(
       mapController: state.map.mapController,
       options: MapOptions(
-          center: state?.center ?? center,
-          zoom: state?.zoom ?? zoom,
-          onTap: onTap,
+        center: state?.center ?? center,
+        zoom: state?.zoom ?? zoom,
+        onTap: onTap,
+        onPositionChanged: onPositionChanged,
+        /*
           onPositionChanged: (position, hasGesture) {
             //print("POS CHANGE $position / $hasGesture");
             //print("BOUNDS: ${state.map.center}/${state.map.zoom}");
             _saveMapStateSignal.sink
-                .add(MapPosition(center: position.center, zoom: position.zoom));
-          }),
+                .add(MapPosition(center: position.center, zoom: position.zoom, hasGesture: hasGesture));
+          }*/
+      ),
       layers: [
         state.map.tileLayer,
         PolygonLayerOptions(polygons: state.map.polygons),
@@ -124,6 +130,7 @@ class _FluxMapWidget extends StatefulWidget {
         this.center,
         this.zoom,
         this.onTap,
+        this.onPositionChanged,
         this.extraLayers});
 
   final Stream<Device> devicesFlux;
@@ -131,6 +138,7 @@ class _FluxMapWidget extends StatefulWidget {
   final double zoom;
   final bool networkStatusLoop;
   final TapCallback onTap;
+  final PositionCallback onPositionChanged;
   final List<LayerOptions> extraLayers;
 
   @override
@@ -140,6 +148,7 @@ class _FluxMapWidget extends StatefulWidget {
       center: center,
       zoom: zoom,
       onTap: onTap,
+      onPositionChanged: onPositionChanged,
       extraLayers: extraLayers);
 }
 
@@ -153,6 +162,7 @@ class FluxMap extends StatefulWidget {
         this.center,
         this.zoom = 2.0,
         this.onTap,
+        this.onPositionChanged,
         this.extraLayers = const <LayerOptions>[]});
 
   /// The stream of device positions updates
@@ -170,8 +180,12 @@ class FluxMap extends StatefulWidget {
   /// Enable the status loop
   final bool networkStatusLoop;
 
-  /// The initial onTap func
+  /// The initial onTap
   final TapCallback onTap;
+
+  /// The initial onPositionChanged
+  final PositionCallback onPositionChanged;
+
   /// Extra map layers
   final List<LayerOptions> extraLayers;
 
@@ -183,6 +197,7 @@ class FluxMap extends StatefulWidget {
       center: center,
       zoom: zoom,
       onTap: onTap,
+      onPositionChanged: onPositionChanged,
       extraLayers: extraLayers);
 }
 
@@ -194,6 +209,7 @@ class _FluxMapState extends State<FluxMap> {
         this.center,
         this.zoom,
         this.onTap,
+        this.onPositionChanged,
         this.extraLayers = const <LayerOptions>[]})
       : assert(state != null),
         assert(devicesFlux != null) {
@@ -205,6 +221,7 @@ class _FluxMapState extends State<FluxMap> {
   final LatLng center;
   final double zoom;
   final TapCallback onTap;
+  final PositionCallback onPositionChanged;
   final bool networkStatusLoop;
   final List<LayerOptions> extraLayers;
 
@@ -219,6 +236,7 @@ class _FluxMapState extends State<FluxMap> {
           center: center,
           zoom: zoom,
           onTap: onTap,
+          onPositionChanged: onPositionChanged,
           extraLayers: extraLayers,
         ));
   }
