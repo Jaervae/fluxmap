@@ -19,6 +19,7 @@ class _FluxMapWidgetState extends State<_FluxMapWidget> {
         this.zoom = 2.0,
         this.networkStatusLoop = true,
         this.onTap,
+        this.onLongPress,
         this.onPositionChanged,
         this.extraLayers = const <LayerOptions>[]})
       : assert(devicesFlux != null) {
@@ -30,6 +31,7 @@ class _FluxMapWidgetState extends State<_FluxMapWidget> {
   final double zoom;
   final bool networkStatusLoop;
   final TapCallback onTap;
+  final LongPressCallback onLongPress;
   final PositionCallback onPositionChanged;
   final List<LayerOptions> extraLayers;
 
@@ -93,6 +95,7 @@ class _FluxMapWidgetState extends State<_FluxMapWidget> {
         center: state?.center ?? center,
         zoom: state?.zoom ?? zoom,
         onTap: onTap,
+        onLongPress: onLongPress,
         onPositionChanged: onPositionChanged,
         /*
           onPositionChanged: (position, hasGesture) {
@@ -130,6 +133,7 @@ class _FluxMapWidget extends StatefulWidget {
         this.center,
         this.zoom,
         this.onTap,
+        this.onLongPress,
         this.onPositionChanged,
         this.extraLayers});
 
@@ -138,6 +142,7 @@ class _FluxMapWidget extends StatefulWidget {
   final double zoom;
   final bool networkStatusLoop;
   final TapCallback onTap;
+  final LongPressCallback onLongPress;
   final PositionCallback onPositionChanged;
   final List<LayerOptions> extraLayers;
 
@@ -148,6 +153,7 @@ class _FluxMapWidget extends StatefulWidget {
       center: center,
       zoom: zoom,
       onTap: onTap,
+      onLongPress: onLongPress,
       onPositionChanged: onPositionChanged,
       extraLayers: extraLayers);
 }
@@ -162,6 +168,7 @@ class FluxMap extends StatefulWidget {
         this.center,
         this.zoom = 2.0,
         this.onTap,
+        this.onLongPress,
         this.onPositionChanged,
         this.extraLayers = const <LayerOptions>[]});
 
@@ -183,6 +190,9 @@ class FluxMap extends StatefulWidget {
   /// The initial onTap
   final TapCallback onTap;
 
+  /// The initial onLongPress
+  final LongPressCallback onLongPress;
+
   /// The initial onPositionChanged
   final PositionCallback onPositionChanged;
 
@@ -197,6 +207,7 @@ class FluxMap extends StatefulWidget {
       center: center,
       zoom: zoom,
       onTap: onTap,
+      onLongPress: onLongPress,
       onPositionChanged: onPositionChanged,
       extraLayers: extraLayers);
 }
@@ -209,6 +220,7 @@ class _FluxMapState extends State<FluxMap> {
         this.center,
         this.zoom,
         this.onTap,
+        this.onLongPress,
         this.onPositionChanged,
         this.extraLayers = const <LayerOptions>[]})
       : assert(state != null),
@@ -221,6 +233,7 @@ class _FluxMapState extends State<FluxMap> {
   final LatLng center;
   final double zoom;
   final TapCallback onTap;
+  final LongPressCallback onLongPress;
   final PositionCallback onPositionChanged;
   final bool networkStatusLoop;
   final List<LayerOptions> extraLayers;
@@ -236,6 +249,7 @@ class _FluxMapState extends State<FluxMap> {
           center: center,
           zoom: zoom,
           onTap: onTap,
+          onLongPress: onLongPress,
           onPositionChanged: onPositionChanged,
           extraLayers: extraLayers,
         ));
